@@ -1,0 +1,37 @@
+version: 2.1
+
+orbs:
+  tbp: townerhale/tbp-orb-test@dev:alpha
+
+jobs:
+  # Test using the orb's executor WITHOUT DLC
+  build-no-dlc:
+    executor:
+      name: tbp/tbp-docker
+      docker_layer_caching: false
+    steps:
+      - checkout
+      - run:
+          name: Build Docker image (NO DLC)
+          command: |
+            echo "Starting build WITHOUT DLC..."
+            time docker build -f Dockerfile.test -t dlc-test:no-dlc .
+
+  # Test using the orb's executor WITH DLC
+  build-with-dlc:
+    executor:
+      name: tbp/tbp-docker
+      docker_layer_caching: true
+    steps:
+      - checkout
+      - run:
+          name: Build Docker image (WITH DLC)
+          command: |
+            echo "Starting build WITH DLC..."
+            time docker build -f Dockerfile.test -t dlc-test:with-dlc .
+
+workflows:
+  dlc-comparison:
+    jobs:
+      - build-no-dlc
+      - build-with-dlc
