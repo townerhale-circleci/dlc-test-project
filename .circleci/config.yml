@@ -4,11 +4,12 @@ orbs:
   tbp: townerhale/tbp-orb-test@dev:alpha
 
 jobs:
-  # Test using the orb's executor WITHOUT DLC
+  # Test WITHOUT DLC
   build-no-dlc:
-    executor:
-      name: tbp/tbp-docker
+    machine:
+      image: ubuntu-2204:current
       docker_layer_caching: false
+    resource_class: large
     steps:
       - checkout
       - run:
@@ -17,11 +18,12 @@ jobs:
             echo "Starting build WITHOUT DLC..."
             time docker build -f Dockerfile.test -t dlc-test:no-dlc .
 
-  # Test using the orb's executor WITH DLC
+  # Test WITH DLC
   build-with-dlc:
-    executor:
-      name: tbp/tbp-docker
+    machine:
+      image: ubuntu-2204:current
       docker_layer_caching: true
+    resource_class: large
     steps:
       - checkout
       - run:
