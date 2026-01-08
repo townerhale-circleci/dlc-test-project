@@ -12,6 +12,9 @@ jobs:
     resource_class: large
     steps:
       - checkout
+      - run: 
+          name: docker version
+          command: docker version
       - run:
           name: Build Docker image (NO DLC)
           command: |
