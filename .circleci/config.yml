@@ -1,10 +1,6 @@
 version: 2.1
 
-orbs:
-  tbp: townerhale/tbp-orb-test@dev:alpha
-
 jobs:
-  # AMD build with buildx cache
   build-amd-buildx:
     machine:
       image: ubuntu-2204:current
@@ -13,6 +9,9 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Login to Docker Hub
+          command: echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+      - run:
           name: Setup buildx
           command: |
             docker buildx create --use
@@ -20,14 +19,15 @@ jobs:
       - run:
           name: Build with buildx (AMD)
           command: |
+            echo "Starting AMD buildx build..."
             time docker buildx build \
-              --cache-from type=registry,ref=cimg/base:current \
+              --cache-from type=registry,ref=docker.io/$DOCKER_USER/dlc-cache:amd \
+              --cache-to type=registry,ref=docker.io/$DOCKER_USER/dlc-cache:amd,mode=max \
               -f Dockerfile.test \
               -t dlc-test:amd \
               --load \
               .
 
-  # ARM build with buildx cache
   build-arm-buildx:
     machine:
       image: ubuntu-2204:current
@@ -36,6 +36,9 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Login to Docker Hub
+          command: echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+      - run:
           name: Setup buildx
           command: |
             docker buildx create --use
@@ -43,15 +46,19 @@ jobs:
       - run:
           name: Build with buildx (ARM)
           command: |
+            echo "Starting ARM buildx build..."
             time docker buildx build \
-              --cache-from type=registry,ref=cimg/base:current \
+              --cache-from type=registry,ref=docker.io/$DOCKER_USER/dlc-cache:arm \
+              --cache-to type=registry,ref=docker.io/$DOCKER_USER/dlc-cache:arm,mode=max \
               -f Dockerfile.test \
               -t dlc-test:arm \
               --load \
               .
 
 workflows:
-  dlc-comparison:
+  buildx-test:
     jobs:
-      - build-amd-buildx
-      - build-arm-buildx
+      - build-amd-buildx:
+          context: docker-hub
+      - build-arm-buildx:
+          context: docker-hub
