@@ -4,39 +4,54 @@ orbs:
   tbp: townerhale/tbp-orb-test@dev:alpha
 
 jobs:
-  # Test WITHOUT DLC
-  build-no-dlc:
+  # AMD build with buildx cache
+  build-amd-buildx:
     machine:
-      image: ubuntu-2404:current
-      docker_layer_caching: false
-    resource_class: large
-    steps:
-      - checkout
-      - run: 
-          name: docker version
-          command: docker version
-      - run:
-          name: Build Docker image (NO DLC)
-          command: |
-            echo "Starting build WITHOUT DLC..."
-            time docker build -f Dockerfile.test -t dlc-test:no-dlc .
-
-  # Test WITH DLC
-  build-with-dlc:
-    machine:
-      image: ubuntu-2404:current
+      image: ubuntu-2204:current
       docker_layer_caching: true
     resource_class: large
     steps:
       - checkout
       - run:
-          name: Build Docker image (WITH DLC)
+          name: Setup buildx
           command: |
-            echo "Starting build WITH DLC..."
-            time docker build -f Dockerfile.test -t dlc-test:with-dlc .
+            docker buildx create --use
+            docker buildx inspect --bootstrap
+      - run:
+          name: Build with buildx (AMD)
+          command: |
+            time docker buildx build \
+              --cache-from type=registry,ref=cimg/base:current \
+              -f Dockerfile.test \
+              -t dlc-test:amd \
+              --load \
+              .
+
+  # ARM build with buildx cache
+  build-arm-buildx:
+    machine:
+      image: ubuntu-2204:current
+      docker_layer_caching: true
+    resource_class: arm.large
+    steps:
+      - checkout
+      - run:
+          name: Setup buildx
+          command: |
+            docker buildx create --use
+            docker buildx inspect --bootstrap
+      - run:
+          name: Build with buildx (ARM)
+          command: |
+            time docker buildx build \
+              --cache-from type=registry,ref=cimg/base:current \
+              -f Dockerfile.test \
+              -t dlc-test:arm \
+              --load \
+              .
 
 workflows:
   dlc-comparison:
     jobs:
-      - build-no-dlc
-      - build-with-dlc
+      - build-amd-buildx
+      - build-arm-buildx
