@@ -1,85 +1,12 @@
-FROM ubuntu:22.04
+FROM cimg/base:current
 
-LABEL maintainer="DLC Test"
+# cimg/base already has: curl, git, docker, jq, etc.
+# Only add things that AREN'T in cimg/base:
 
-SHELL ["/bin/bash", "-exo", "pipefail", "-c"]
-
-ENV DEBIAN_FRONTEND=noninteractive \
-    TERM=dumb \
-    PAGER=cat
-
-RUN echo 'APT::Get::Assume-Yes "true";' > /etc/apt/apt.conf.d/90circleci && \
-	echo 'DPkg::Options "--force-confnew";' >> /etc/apt/apt.conf.d/90circleci && \
-	apt-get update && apt-get install -y \
-		curl \
-		locales \
-		sudo \
-	&& \
-	locale-gen en_US.UTF-8 && \
-	rm -rf /var/lib/apt/lists/* && \
-	groupadd --gid=1002 circleci && \
-	useradd --uid=1001 --gid=circleci --create-home circleci && \
-	echo 'circleci ALL=NOPASSWD: ALL' >> /etc/sudoers.d/50-circleci && \
-	echo 'Defaults    env_keep += "DEBIAN_FRONTEND"' >> /etc/sudoers.d/env_keep && \
-	sudo -u circleci mkdir /home/circleci/project && \
-	sudo -u circleci mkdir /home/circleci/bin && \
-	sudo -u circleci mkdir -p /home/circleci/.local/bin
-
-ENV PATH=/home/circleci/bin:/home/circleci/.local/bin:$PATH \
-	LANG=en_US.UTF-8 \
-	LANGUAGE=en_US:en \
-	LC_ALL=en_US.UTF-8
-
-RUN apt-get update && apt-get install -y --no-install-recommends \
-		autoconf \
-		build-essential \
-		ca-certificates \
-		cmake \
-		curl \
-		file \
-		gettext-base \
-		gnupg \
-		gzip \
-		jq \
-		libcurl4-openssl-dev \
-		libmagic-dev \
-		libmariadb-dev \
-		libmariadb-dev-compat \
-		libpq-dev \
-		libssl-dev \
-		libsqlite3-dev \
-		lsof \
-		make \
-		nano \
-		net-tools \
-		netcat-openbsd \
-		openssh-client \
-		parallel \
-		pkg-config \
-		postgresql-client \
-		python-is-python3 \
-		shellcheck \
-		software-properties-common \
-		sudo \
-		tar \
-		tzdata \
-		unzip \
-		vim \
-		wget \
-		zip && \
-	add-apt-repository ppa:git-core/ppa && apt-get install -y git && \
-	rm -rf /var/lib/apt/lists/*
-
-RUN apt-get update && apt-get install -y \
-		apt-transport-https \
-		ca-certificates \
-		curl \
-		gnupg-agent \
-		software-properties-common && \
-	curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add - && \
-	add-apt-repository -y "deb [arch=$(dpkg --print-architecture)] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" && \
-	apt-get install -y docker-ce docker-ce-cli containerd.io && \
-	rm -rf /var/lib/apt/lists/*
+RUN sudo apt-get update && sudo apt-get install -y \
+    libmariadb-dev \
+    libmariadb-dev-compat \
+    libmagic-dev
 
 USER circleci
 WORKDIR /home/circleci/project
