@@ -1,5 +1,5 @@
 version: 2.1
-#testing2
+
 orbs:
   tbp: townerhale/tbp-orb-test@dev:alpha
 
@@ -9,6 +9,7 @@ workflows:
       - tbp/build-docker-amd:
           repo: dlc-test
           app_version: v1.0.0
+          dockerfile: Dockerfile.test
           extra_build_args: "--cache-from type=registry,ref=${AWS_ECR_REGISTRY_ID}.dkr.ecr.us-east-1.amazonaws.com/dlc-test:cache --cache-to type=registry,ref=${AWS_ECR_REGISTRY_ID}.dkr.ecr.us-east-1.amazonaws.com/dlc-test:cache,mode=max"
           context:
             - aws-ecr
