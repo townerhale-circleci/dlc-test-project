@@ -1,64 +1,14 @@
 version: 2.1
 
-jobs:
-  build-amd-buildx:
-    machine:
-      image: ubuntu-2204:current
-      docker_layer_caching: false
-    resource_class: large
-    steps:
-      - checkout
-      - run:
-          name: Login to Docker Hub
-          command: echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-      - run:
-          name: Setup buildx
-          command: |
-            docker buildx create --use
-            docker buildx inspect --bootstrap
-      - run:
-          name: Build with buildx (AMD)
-          command: |
-            echo "Starting AMD buildx build..."
-            time docker buildx build \
-              --cache-from type=registry,ref=docker.io/$DOCKER_USER/dlc-cache:amd \
-              --cache-to type=registry,ref=docker.io/$DOCKER_USER/dlc-cache:amd,mode=max \
-              -f Dockerfile.test \
-              -t dlc-test:amd \
-              --load \
-              .
-
-  build-arm-buildx:
-    machine:
-      image: ubuntu-2204:current
-      docker_layer_caching: false
-    resource_class: arm.large
-    steps:
-      - checkout
-      - run:
-          name: Login to Docker Hub
-          command: echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-      - run:
-          name: Setup buildx
-          command: |
-            docker buildx create --use
-            docker buildx inspect --bootstrap
-      - run:
-          name: Build with buildx (ARM)
-          command: |
-            echo "Starting ARM buildx build..."
-            time docker buildx build \
-              --cache-from type=registry,ref=docker.io/$DOCKER_USER/dlc-cache:arm \
-              --cache-to type=registry,ref=docker.io/$DOCKER_USER/dlc-cache:arm,mode=max \
-              -f Dockerfile.test \
-              -t dlc-test:arm \
-              --load \
-              .
+orbs:
+  tbp: townerhale/tbp-orb-test@dev:alpha
 
 workflows:
-  buildx-test:
+  test-buildx-cache:
     jobs:
-      - build-amd-buildx:
-          context: docker-hub
-      - build-arm-buildx:
-          context: docker-hub
+      - tbp/build-docker-amd:
+          repo: dlc-test
+          app_version: v1.0.0
+          extra_build_args: "--cache-from type=registry,ref=${AWS_ECR_REGISTRY_ID}.dkr.ecr.us-east-1.amazonaws.com/dlc-test:cache --cache-to type=registry,ref=${AWS_ECR_REGISTRY_ID}.dkr.ecr.us-east-1.amazonaws.com/dlc-test:cache,mode=max"
+          context:
+            - aws-ecr
