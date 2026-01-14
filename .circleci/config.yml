@@ -4,26 +4,12 @@ orbs:
   tbp: townerhale/tbp-orb-test@dev:alpha
 
 jobs:
-  # Test WITHOUT DLC
-  build-no-dlc:
-    machine:
-      image: ubuntu-2404:current
-      docker_layer_caching: false
-    resource_class: large
-    steps:
-      - checkout
-      - run:
-          name: Build Docker image (NO DLC)
-          command: |
-            echo "Starting build WITHOUT DLC..."
-            time docker build -f Dockerfile.test -t dlc-test:no-dlc .
-
   # Test WITH DLC
   build-with-dlc:
     machine:
       image: ubuntu-2404:current
       docker_layer_caching: true
-    resource_class: large
+    resource_class: medium
     steps:
       - checkout
       - run:
@@ -35,5 +21,4 @@ jobs:
 workflows:
   dlc-comparison:
     jobs:
-      - build-no-dlc
       - build-with-dlc
