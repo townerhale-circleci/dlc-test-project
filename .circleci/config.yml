@@ -1,12 +1,13 @@
 version: 2.1
 
 orbs:
-  tbp: townerhale/tbp-orb-test@dev:alpha 
+  tbp: townerhale/tbp-orb-test@dev:alpha
 
 workflows:
   dlc-orb-test:
     jobs:
       - tbp/build-docker-amd:
+          environment: towner
           dockerfile: Dockerfile
           repo: dlc-test
           app_version: test-v1
