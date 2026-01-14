@@ -10,5 +10,5 @@ workflows:
           environment: towner
           dockerfile: Dockerfile
           repo: dlc-test
-          app_version: test-v1
+          app_version: test-v1 
           context: aws-ecr
