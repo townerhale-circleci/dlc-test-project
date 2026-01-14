@@ -16,7 +16,7 @@ jobs:
           name: Build Docker image (WITH DLC)
           command: |
             echo "Starting build WITH DLC..."
-            time docker build -f Dockerfile.test -t dlc-test:with-dlc .
+            DOCKER_BUILDKIT=0 docker build -f Dockerfile.test -t dlc-test:with-dlc .
 
 workflows:
   dlc-comparison:
