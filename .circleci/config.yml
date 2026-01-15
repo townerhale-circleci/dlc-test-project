@@ -8,7 +8,7 @@ workflows:
     jobs:
       - tbp/build-docker-amd:
           environment: towner
-          dockerfile: Dockerfile
+          dockerfile: Dockerfile 
           repo: dlc-test
           app_version: test-v1 
           context: aws-ecr
