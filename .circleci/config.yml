@@ -10,7 +10,7 @@ workflows:
     jobs:
       - tbp/build-docker-amd:
           repo: dlc-test
-          app_version: v1.0.0
+          app_version: v1.0.0 
           dockerfile: Dockerfile.test
           environment: towner
           # We pass the args here to see if the ORIGINAL orb can handle them
