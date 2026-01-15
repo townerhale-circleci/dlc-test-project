@@ -1,9 +1,9 @@
-ARG BASE_IMAGE=nvidia/cuda:12.6.3-cudnn-devel-ubuntu22.04
+ARG BASE_IMAGE=ubuntu:22.04
 FROM ${BASE_IMAGE}
 
 WORKDIR /app
 
-# Base system dependencies
+# Base system dependencies and build tools
 ARG CACHE_BUST_LAYER_1=1
 RUN echo "Layer 1 cache bust: ${CACHE_BUST_LAYER_1}" && \
     apt-get update && apt-get install -y \
@@ -19,7 +19,7 @@ RUN echo "Layer 1 cache bust: ${CACHE_BUST_LAYER_1}" && \
     lsb-release \
     && rm -rf /var/lib/apt/lists/*
 
-# Node.js and npm packages
+# Node.js 20 and popular npm packages
 ARG CACHE_BUST_LAYER_2=1
 RUN echo "Layer 2 cache bust: ${CACHE_BUST_LAYER_2}" && \
     curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
@@ -30,12 +30,17 @@ RUN echo "Layer 2 cache bust: ${CACHE_BUST_LAYER_2}" && \
         webpack \
         webpack-cli \
         @angular/cli \
+        @nestjs/cli \
         create-react-app \
         next \
+        vue \
         prettier \
-        eslint
+        eslint \
+        jest \
+        mocha \
+        pm2
 
-# Python
+# Python and pip
 ARG CACHE_BUST_LAYER_3=1
 RUN echo "Layer 3 cache bust: ${CACHE_BUST_LAYER_3}" && \
     apt-get update && apt-get install -y \
@@ -44,111 +49,65 @@ RUN echo "Layer 3 cache bust: ${CACHE_BUST_LAYER_3}" && \
         python3-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# PyTorch
+# Common Python web and data libraries (no ML)
 ARG CACHE_BUST_LAYER_4=1
 RUN echo "Layer 4 cache bust: ${CACHE_BUST_LAYER_4}" && \
     pip3 install --no-cache-dir \
-        torch \
-        torchvision \
-        torchaudio
+        django \
+        flask \
+        fastapi \
+        uvicorn \
+        requests \
+        httpx \
+        aiohttp \
+        sqlalchemy \
+        psycopg2-binary \
+        pymongo \
+        redis \
+        celery
 
-# TensorFlow
+# Python data processing (not ML)
 ARG CACHE_BUST_LAYER_5=1
 RUN echo "Layer 5 cache bust: ${CACHE_BUST_LAYER_5}" && \
     pip3 install --no-cache-dir \
-        tensorflow \
-        keras
-
-# ML/Data Science libraries
-ARG CACHE_BUST_LAYER_6=1
-RUN echo "Layer 6 cache bust: ${CACHE_BUST_LAYER_6}" && \
-    pip3 install --no-cache-dir \
         numpy \
-        scipy \
         pandas \
-        scikit-learn \
+        scipy \
         matplotlib \
         seaborn \
         plotly \
         jupyter \
-        jupyterlab \
-        notebook
+        jupyterlab
 
-# NLP and Transformers
-ARG CACHE_BUST_LAYER_7=1
-RUN echo "Layer 7 cache bust: ${CACHE_BUST_LAYER_7}" && \
-    pip3 install --no-cache-dir \
-        transformers \
-        datasets \
-        tokenizers \
-        sentencepiece \
-        nltk \
-        spacy
-
-# Computer Vision libraries
-ARG CACHE_BUST_LAYER_8=1
-RUN echo "Layer 8 cache bust: ${CACHE_BUST_LAYER_8}" && \
-    pip3 install --no-cache-dir \
-        opencv-python \
-        opencv-contrib-python \
-        pillow \
-        imageio \
-        scikit-image
-
-# Go
-ARG CACHE_BUST_LAYER_9=1
-RUN echo "Layer 9 cache bust: ${CACHE_BUST_LAYER_9}" && \
-    wget https://go.dev/dl/go1.22.0.linux-amd64.tar.gz \
-    && tar -C /usr/local -xzf go1.22.0.linux-amd64.tar.gz \
-    && rm go1.22.0.linux-amd64.tar.gz
-ENV PATH="${PATH}:/usr/local/go/bin"
-
-# Rust
-ARG CACHE_BUST_LAYER_10=1
-RUN echo "Layer 10 cache bust: ${CACHE_BUST_LAYER_10}" && \
-    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-ENV PATH="/root/.cargo/bin:${PATH}"
-
-# Java
-ARG CACHE_BUST_LAYER_11=1
-RUN echo "Layer 11 cache bust: ${CACHE_BUST_LAYER_11}" && \
+# Java JDK and build tools
+ARG CACHE_BUST_LAYER_6=1
+RUN echo "Layer 6 cache bust: ${CACHE_BUST_LAYER_6}" && \
     apt-get update && apt-get install -y \
         openjdk-17-jdk \
         maven \
         gradle \
     && rm -rf /var/lib/apt/lists/*
 
-# Database clients
-ARG CACHE_BUST_LAYER_12=1
-RUN echo "Layer 12 cache bust: ${CACHE_BUST_LAYER_12}" && \
+# Go runtime
+ARG CACHE_BUST_LAYER_7=1
+RUN echo "Layer 7 cache bust: ${CACHE_BUST_LAYER_7}" && \
+    wget https://go.dev/dl/go1.22.0.linux-amd64.tar.gz \
+    && tar -C /usr/local -xzf go1.22.0.linux-amd64.tar.gz \
+    && rm go1.22.0.linux-amd64.tar.gz
+ENV PATH="${PATH}:/usr/local/go/bin"
+
+# Database clients and tools
+ARG CACHE_BUST_LAYER_8=1
+RUN echo "Layer 8 cache bust: ${CACHE_BUST_LAYER_8}" && \
     apt-get update && apt-get install -y \
         postgresql-client \
         mysql-client \
         redis-tools \
     && rm -rf /var/lib/apt/lists/*
 
-# Deep Learning frameworks
-ARG CACHE_BUST_LAYER_13=1
-RUN echo "Layer 13 cache bust: ${CACHE_BUST_LAYER_13}" && \
-    pip3 install --no-cache-dir \
-        jax \
-        jaxlib \
-        optax \
-        flax
-
-# ML tools
-ARG CACHE_BUST_LAYER_14=1
-RUN echo "Layer 14 cache bust: ${CACHE_BUST_LAYER_14}" && \
-    pip3 install --no-cache-dir \
-        xgboost \
-        lightgbm \
-        catboost \
-        statsmodels \
-        prophet
-
 # Docker CLI
-ARG CACHE_BUST_LAYER_15=1
-RUN echo "Layer 15 cache bust: ${CACHE_BUST_LAYER_15}" && \
+ARG CACHE_BUST_LAYER_9=1
+RUN echo "Layer 9 cache bust: ${CACHE_BUST_LAYER_9}" && \
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg \
     && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null \
     && apt-get update \
@@ -156,50 +115,67 @@ RUN echo "Layer 15 cache bust: ${CACHE_BUST_LAYER_15}" && \
     && rm -rf /var/lib/apt/lists/*
 
 # Kubernetes tools
-ARG CACHE_BUST_LAYER_16=1
-RUN echo "Layer 16 cache bust: ${CACHE_BUST_LAYER_16}" && \
+ARG CACHE_BUST_LAYER_10=1
+RUN echo "Layer 10 cache bust: ${CACHE_BUST_LAYER_10}" && \
     curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" \
     && install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl \
     && rm kubectl
 
-# Terraform
-ARG CACHE_BUST_LAYER_17=1
-RUN echo "Layer 17 cache bust: ${CACHE_BUST_LAYER_17}" && \
+# Terraform and cloud tools
+ARG CACHE_BUST_LAYER_11=1
+RUN echo "Layer 11 cache bust: ${CACHE_BUST_LAYER_11}" && \
     wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg \
     && echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/hashicorp.list \
     && apt-get update && apt-get install -y terraform \
     && rm -rf /var/lib/apt/lists/*
 
-# Web scraping
-ARG CACHE_BUST_LAYER_18=1
-RUN echo "Layer 18 cache bust: ${CACHE_BUST_LAYER_18}" && \
+# Web scraping tools (lighter than Playwright)
+ARG CACHE_BUST_LAYER_12=1
+RUN echo "Layer 12 cache bust: ${CACHE_BUST_LAYER_12}" && \
     pip3 install --no-cache-dir \
-        selenium \
         beautifulsoup4 \
         scrapy \
-        playwright \
-    && playwright install --with-deps chromium
+        selenium \
+        lxml
 
-# Web frameworks
-ARG CACHE_BUST_LAYER_19=1
-RUN echo "Layer 19 cache bust: ${CACHE_BUST_LAYER_19}" && \
+# Additional Python utilities
+ARG CACHE_BUST_LAYER_13=1
+RUN echo "Layer 13 cache bust: ${CACHE_BUST_LAYER_13}" && \
     pip3 install --no-cache-dir \
-        fastapi \
-        uvicorn \
-        django \
-        flask \
-        requests \
-        httpx \
-        aiohttp
+        pytest \
+        pytest-cov \
+        black \
+        flake8 \
+        mypy \
+        pylint \
+        pydantic \
+        python-dotenv
 
-# Data processing
-ARG CACHE_BUST_LAYER_20=1
-RUN echo "Layer 20 cache bust: ${CACHE_BUST_LAYER_20}" && \
-    pip3 install --no-cache-dir \
-        sqlalchemy \
-        psycopg2-binary \
-        pymongo \
-        redis \
-        celery
+# Nginx and common system utilities
+ARG CACHE_BUST_LAYER_14=1
+RUN echo "Layer 14 cache bust: ${CACHE_BUST_LAYER_14}" && \
+    apt-get update && apt-get install -y \
+        nginx \
+        supervisor \
+        cron \
+        rsync \
+        zip \
+        unzip \
+        jq \
+        htop \
+    && rm -rf /var/lib/apt/lists/*
+
+# Node.js application dependencies (common packages)
+ARG CACHE_BUST_LAYER_15=1
+RUN echo "Layer 15 cache bust: ${CACHE_BUST_LAYER_15}" && \
+    npm install -g \
+        express \
+        socket.io \
+        lodash \
+        axios \
+        dotenv \
+        nodemon \
+        sequelize-cli \
+        prisma
 
 CMD ["python3", "--version"]
