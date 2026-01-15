@@ -14,6 +14,6 @@ workflows:
           dockerfile: Dockerfile.test
           environment: towner
           # We pass the args here to see if the ORIGINAL orb can handle them
-          extra_build_args: "--cache-from type=registry,ref=${AWS_ECR_REGISTRY_ID}.dkr.ecr.us-west-2.amazonaws.com/dlc-test:cache --cache-to type=registry,ref=${AWS_ECR_REGISTRY_ID}.dkr.ecr.us-west-2.amazonaws.com/dlc-test:cache,mode=max"
+          extra_build_args: "--cache-from type=registry,ref=${AWS_ECR_REGISTRY_ID}.dkr.ecr.us-west-1.amazonaws.com/dlc-test:cache --cache-to type=registry,ref=${AWS_ECR_REGISTRY_ID}.dkr.ecr.us-west-1.amazonaws.com/dlc-test:cache,mode=max"
           context:
             - aws-ecr
